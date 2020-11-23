@@ -461,6 +461,21 @@ The special value `all` enables all statistics.
 
 Once enabled, you should see the metrics values changing on the `/metrics` endpoint for the management endpoint.
 
+## Debugging
+
+To enable debugging, we need the Keycloak image to listen on a TCP port the Java debugger connections.
+Historically, this has been port `8787`, so we'll use that here also.
+
+To listen for Java debugger connections, we need to add a `--debug` option to the `CMD`-line. Then that option will be passed on to `standalone.sh` that supports it.
+Since the Keycloak image already defaults `CMD` to `-b 0.0.0.0`, we need to add both of these
+as parameters when running. Also, by default, [JDK 9+](https://bugs.openjdk.java.net/browse/JDK-8175050) only
+listens on localhost, so you'll want the `*:8787` syntax to make the JVM listen for connections from all hosts.
+Remember to shell-quote the `*` character though, especially under `zsh`.
+
+In addition to setting the `CMD` options, you'll want to publish the debug TCP port as well, resulting in:
+
+    docker run -p 8080:8080 -p '8787:8787' jboss/keycloak -b 0.0.0.0 --debug '*:8787'
+
 ## Other details
 
 This image extends the [`registry.access.redhat.com/ubi8-minimal`](https://access.redhat.com/containers/?tab=overview#/registry.access.redhat.com/ubi8-minimal) base image and adds Keycloak and its dependencies on top of it.
